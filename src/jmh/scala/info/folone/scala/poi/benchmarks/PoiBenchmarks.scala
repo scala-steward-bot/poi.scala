@@ -1,10 +1,11 @@
 package info.folone.scala.poi.benchmarks
 
+import info.folone.scala.poi._
+
 import java.util.concurrent.TimeUnit
+import java.util.Date
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import info.folone.scala.poi._
-import java.util.Date
 import scala.util.Random
 import scalaz.syntax.semigroup._
 
@@ -42,10 +43,10 @@ class PoiBenchmarks {
 
     // Small workbook (baseline)
     smallWorkbook = createWorkbook(100, "Small")
-    
+
     // Medium workbook
     mediumWorkbook = createWorkbook(1000, "Medium")
-    
+
     // Large workbook
     largeWorkbook = createWorkbook(5000, "Large")
   }
@@ -157,7 +158,7 @@ class PoiBenchmarks {
   def unicodeDataBenchmark(bh: Blackhole): Unit = {
     val unicodeData = Seq(
       "测试数据",
-      "テストデータ", 
+      "テストデータ",
       "тестовые данные",
       "δοκιμαστικά δεδομένα",
       "données de test"
@@ -175,7 +176,7 @@ class PoiBenchmarks {
     val workbooks = (1 to 10).map { i =>
       createWorkbook(dataSize / 10, s"Memory-$i")
     }
-    
+
     // Combine them using monoid operations
     import scalaz.syntax.monoid._
     val combined = workbooks.reduce(_ |+| _)
@@ -188,6 +189,7 @@ class PoiBenchmarks {
     val combined = workbooks.reduce((wb1, wb2) => wb1 |+| wb2)
     bh.consume(combined.toString)
   }
+
 }
 
 /**
@@ -210,7 +212,7 @@ class MemoryBenchmarks {
     val beforeMemory = runtime.totalMemory() - runtime.freeMemory()
 
     val workbook = createLargeWorkbook(dataSize)
-    
+
     val afterMemory = runtime.totalMemory() - runtime.freeMemory()
     val memoryUsed = afterMemory - beforeMemory
 
@@ -228,18 +230,18 @@ class MemoryBenchmarks {
         )
         Row(rowIndex)(cells)
       }.toSet
-      
+
       val sheet = Sheet(s"Efficient-$i")(rows)
       Workbook(Set(sheet))
     }
 
     // Force garbage collection
     System.gc()
-    
+
     val combined = workbooks.take(10).reduce { (wb1: Workbook, wb2: Workbook) =>
       wb1 |+| wb2
     }
-    
+
     bh.consume(combined.toString)
   }
 
@@ -262,4 +264,5 @@ class MemoryBenchmarks {
     val sheet = Sheet("LargeSheet")(rows)
     Workbook(Set(sheet))
   }
+
 }
